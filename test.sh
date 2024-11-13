@@ -1,7 +1,7 @@
 set -eo pipefail
 
-COLOR_GREEN=`tput setaf 2`
-COLOR_NC=`tput sgr0` # No Color
+COLOR_GREEN=`tput setaf 2;`
+COLOR_NC=`tput sgr0;` # No Color
 
 echo "Starting black"
 poetry run black .
