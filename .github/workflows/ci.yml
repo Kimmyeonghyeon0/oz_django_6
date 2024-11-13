@@ -2,70 +2,71 @@ name: Django CI
 
 on:
   push:
-    ci:
-      runs-on: ubuntu-20.04 # ubuntu 20 docker image를 사용한다고 생각
-      env:
-        DB_HOST: 127.0.0.1
-        DB_PORT: 3306
-        DB_USER: root
-        DB_PASSWORD: 00915
-        DB_DATABASE: oz_django6
-      steps:
-          #github action 이미지는 기복적으로 checkout이 안되어 있
-        - #우리가 ci에서 하고자하는 것은 코드를 검사하는 것이기 때ㅜ문에 제일 먼저 checkout을 해줌
-        - name: Check out the codes
-          uses: actions/checkout@v2
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
 
-        - name: Setup python environment  #ubuntu 20에 python 3.12가 없으므로 setup해줌 ㅇㅅㅇ
-          id: setup-python
-          uses: actions/setup-python@v2
-          with:
-            python-version: 3.12
+jobs:
+  ci:
+    runs-on: ubuntu-20.04
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USER: root
+      DB_PASSWORD: 00915
+      DB_DATABASE: oz_django6
 
-        ## 각 step은 uses 혹은 run 둘중 하나를 꼭 사용행야 함
-        ## uses: 다른 사람이 미리 만들어 놓은 action을 실행
-        ## run: 내가 임의의 스크립트를 (혹은 명령어를 실행)
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: ${{ env.DB_DATABASE }}
+          MYSQL_USER: ${{ env.DB_USER }}
+          MYSQL_PASSWORD: ${{ env.DB_PASSWORD }}
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
 
-        - name: Set timezone to KST
-          run: |
-            sudo rm /etc/localtime
-            sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
 
-        # Start Mysql
-        # https://ovirium.com/blog/how-to-make-mysql-work-in-your-github-actions/
-        - name: Start Mysql
-          run: |  #(파이프라인)은 yaml 문법인데 value를 multi-line으로 쓰고 싶을때 사용
-            sudo systemctl start mysql
-            mysql -e "use mysql; FLUSH PRIVILEGES; ALTER USER '${{ env.DB_USER }}'@'localhost' IDENTIFIED BY '${{ env.DB_PASSWORD }}';" -uroot -proot
-            mysql -e 'CREATE DATABASE ${{ env.DB_DATABASE }};' -u${{ env.DB_USER }} -p${{ env.DB_PASSWORD }}
+      - name: Setup Python environment
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.11
 
-        ## 공식 installer를 사용해서 poetry를 설치 그 다음 라인의 echo는 $GITHUB_PACH에 poetry를 등록
-        ## poetry 공식 installer를 사용하면 poetry실행파일이 "${HOME}/.local/bin에 실행됨 따라서 그 경로 그대로
-        ## $GITHUB_PATH에 등록해서 바로 사용할수 있도록함
-        - name: Install Poetry
-          run: |  
-            curl -sSL curl -sSL https://install.python-poetry.org | python3 -
-            echo "${HOME}/.local/bin" >> $GITHUB_PATH
+      - name: Set timezone to KST
+        run: |
+          sudo rm /etc/localtime
+          sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
-        - name: Install dependencies
-          run: |
-            poetry install
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
-        ## --check옵션은 파일을 수정하지 않고 파일이 black규칙을 준수하지는 검증만 한다
-        ## github action job의 기본 동적은 step이 실패할 경우에 이후 step으로 넘어가지 않는다
+      - name: Install dependencies
+        run: |
+          poetry install
 
-        - name: Run black
-          run: |
-            poetry run black . --check
+      - name: Run black
+        run: |
+          poetry run black . --check
 
-        - name: Run isort
-          run: |
-            poetry run isort . --check --diff
+      - name: Run isort
+        run: |
+          poetry run isort . --check --diff
 
-        - name: Run Mypy
-          run: |
-            poetry run mypy .
+      - name: Run Mypy
+        run: |
+          poetry run mypy .
 
-        - name: Test python project
-          run: |
-            poetry run python manage.py test
+      - name: Run migrations
+        run: |
+          poetry run python manage.py migrate
+
+      - name: Test Django project
+        run: |
+          poetry run python manage.py test
