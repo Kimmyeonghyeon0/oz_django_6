@@ -8,8 +8,8 @@ on:
         DB_HOST: 127.0.0.1
         DB_PORT: 3306
         DB_USER: root
-        DB_PASSWORD: 1234
-        DB_DATABASE: oz_django
+        DB_PASSWORD: 00915
+        DB_DATABASE: oz_django6
       steps:
           #github action 이미지는 기복적으로 checkout이 안되어 있
         - #우리가 ci에서 하고자하는 것은 코드를 검사하는 것이기 때ㅜ문에 제일 먼저 checkout을 해줌
