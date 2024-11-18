@@ -13,6 +13,7 @@ class TestArticleService(TestCase):
         # When
         result_article = get_an_article(article.id)
 
+
         # Then
         self.assertEqual(article.id, result_article.id)
         self.assertEqual(title, result_article.title)
