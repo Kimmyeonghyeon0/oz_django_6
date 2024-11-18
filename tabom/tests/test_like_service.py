@@ -24,7 +24,6 @@ class TestLikeService(TestCase):
         with self.assertRaises(IntegrityError):
             do_like(user.id, article.id)
 
-
     def test_it_should_raise_exception_when_like_an_user_does_not_exist(self) -> None:
         # Given
         invalid_user_id = 9988
@@ -43,7 +42,7 @@ class TestLikeService(TestCase):
         with self.assertRaises(IntegrityError):
             do_like(user.id, invalid_article_id)
 
-    def test_like_cont_should_increase(self):
+    def test_like_cont_should_increase(self) -> None:
         # Given
         user = User.objects.create(name="test")
         article = Article.objects.create(title="test_title")

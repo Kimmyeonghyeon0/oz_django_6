@@ -27,3 +27,31 @@ tuple 자체는 immutable하지만 tuple안의 요소는 mutable 할 수 있다
 - 위 두가지에 의해서 테스트들이 "격리"된 상태에서 수행되게 됩니다.
 - 테스트가 외부 데이터에 흔들리지(영향을 받지) 않게 됩니다.
 
+    def test_temp(self):
+        self.assertEqual(
+            [1, 2, 3],
+            [3, 2, 1]
+        )
+        #assertEqual 로 두 리스트 비교하면 순서도 본다 -> 결과 = 실패
+        #순서를 무시ㅡ하고 검증하고 싶다면 ->set()
+        '''
+            LIST1 = [1, 2, 3],
+            LIST2 = [3, 2, 1]
+
+    def test_temp(self):
+        self.assertEqual(
+            set[LIST1],
+            set[LIST2]
+        )
+        '''
+        #순서가 보장되어 있지 않는 함수를 검증할때는 then 에서도 항상
+        "순서가 상관 없이" 검중 해야합니다
+        그렇지 않으면 테스트가 간헐적으로 실패하게 됩니다
+        테스트가 간헐적 으로 실패하면 배포할 때마다 스트레스
+
+        ##실제로 일어나는 쿼리를 조회하는 방법
+        orm을 사용할 지라도 내부에서 어떤 sql이 실행되는지 알아야 함
+        from django.test.utils import CaptureQueryiesContext
+        CaptureQueryiesContext를 사용하면 실제 발생하면 sql쿼리를 전부 볼수있
+
+        with self.assert..
