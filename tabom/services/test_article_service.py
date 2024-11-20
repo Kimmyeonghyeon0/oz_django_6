@@ -1,5 +1,7 @@
 from audioop import reverse
+
 from django.test import TestCase
+
 from tabom.models import Article, Like, User
 from tabom.services.article_service import get_an_article, get_article_list
 
@@ -38,7 +40,4 @@ class TestArticleService(TestCase):
         with self.assertNumQueries(2):
             self.assertEqual(len(result_articles), 10)
             self.assertEqual(1, result_articles[0].like_set.count())
-            self.assertEqual([a.id for a in reversed(articles[10:21])],
-                             [a.id for a in result_articles])
-
-
+            self.assertEqual([a.id for a in reversed(articles[10:21])], [a.id for a in result_articles])

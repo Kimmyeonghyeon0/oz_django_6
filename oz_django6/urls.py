@@ -17,7 +17,15 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from ninja import NinjaAPI
+
+from tabom.routers.like_router import router as like_router
+
+api = NinjaAPI()
+api.add_router("/likes/", like_router)
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/v1/", api.urls),
 ]
